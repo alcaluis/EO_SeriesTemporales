@@ -1,0 +1,81 @@
+---
+title: "series_temporales_2.pdf"
+author:
+  - "ALBACETE CABALLERO, LUIS"
+  - "SEBASTIA GARCIA, SERGIO"
+  - "SELMA GRACIA, PABLO"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Carga de datos y librerias
+# WIP
+```
+
+# Ejercicio 1
+
+Realizar gráficos que describan la serie original. Comprobar mediante algún método gráfico si existe estacionalidad anual.
+
+```{r ej1}
+
+```
+
+# Ejercicio 2
+
+¿Parece que hay tendencia? Estimar la tendencia utilizando un modelo lineal y un filtro de media móvil (teniendo cuidado con los valores NA).
+
+```{r ej2}
+
+```
+
+# Ejercicio 3
+
+Analizar la varianza: ¿parece ser constante?
+
+```{r ej3}
+
+```
+
+# Ejercicio 4
+
+Antes de continuar con el análisis, transformar la serie temporal en una serie regular con una frecuencia fija (el problema es que distintos años tienen diferentes números de días). Para ello, agregamos la serie temporal en 36 puntos por año, promediando los días de cada mes en
+tres periodos de aproximadamente 10 días. Es decir, para cada mes se promedian (con la media) las observaciones en tres periodos: desde el 1 hasta el 10, desde el 11 hasta el 20, y desde el 21 hasta el final del mes (este último periodo puede tener una longitud variable). Las funciones "summarise" en combinación con "group by" del paquete dplyr pueden ser útiles para esta operación.
+
+```{r ej4}
+
+```
+
+# Ejercicio 5
+
+Descomponer la serie en tendencia, estacionalidad y residuos. Estudiar los residuos y la tendencia.
+
+```{r ej5}
+
+```
+
+# Ejercicio 6
+
+¿Hay evidencia del cambio climático en estas observaciones? Es decir, ¿parece haber un calentamiento a lo largo del tiempo? Responder analizando la información obtenida hasta ahora y, eventualmente, utilizando otros métodos.
+
+```{r ej6}
+
+```
+
+# Ejercicio 7
+
+Considerando la información hasta el año 2010, construir un modelo predictivo para la temperatura en la década 2010-2020. Contrastar la predicción obtenida con los datos observados. Comparar distintos modelos predictivos y evaluarlos en cuanto a su capacidad para predecir la temperatura de la d´ecada 2010-2020.
+
+```{r ej7}
+
+```
+
+# Ejercicio 8
+
+Proporcionar una estimación de la temperatura hasta el año 2030. En particular, proporcionar una estimación de la temperatura para todos los meses del año 2030. Utilizar el mejor modelo obtenido en el punto anterior. Intentar también proporcionar una estimación de la confianza o incertidumbre de las predicciones.
+
+```{r ej8}
+
+```
