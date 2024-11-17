@@ -87,8 +87,16 @@ Apreciamos que mediante ambos, un modelo lineal y el uso de las medias móviles,
 Analizar la varianza: ¿parece ser constante?
 
 ```{r ej3}
+df_tg_est_varianza <- df_tg %>%
+  mutate(YEAR = as.numeric(YEAR)) %>%
+  group_by(YEAR) %>%
+  summarise(var_TG = sd(TG)**2)
 
+ggplot(df_tg_est_varianza, aes(x = YEAR)) +
+  geom_line(aes(y = var_TG), color = "purple", size = 1) +
+  labs(title = "Serie Temporal de TG con Varianza", x = "Fecha", y = "Temperatura (TG)")
 ```
+Como podemos comprobar la varianza no es constante con el paso de los años. Basándonos en la heterocedasticidad podemos concluir que la serie es "no estacionaria".
 
 # Ejercicio 4
 
