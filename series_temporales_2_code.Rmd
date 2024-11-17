@@ -17,6 +17,7 @@ library(lubridate)
 library(tidyr)
 library(lomb)
 library(ggplot2)
+library(forecast)
 tg <- read.table("./data/TG_STAID000455.txt", header = TRUE, sep = ",", skip = 20)
 ```
 
@@ -62,8 +63,24 @@ ggplot(df_tg, aes(x = MONTH, y = TG)) +
 ¿Parece que hay tendencia? Estimar la tendencia utilizando un modelo lineal y un filtro de media móvil (teniendo cuidado con los valores NA).
 
 ```{r ej2}
+df_tg$DATE_N <- as.numeric(df_tg$DATE)
+modelo_lineal <- lm(TG ~ DATE_N, data = df_tg) 
 
+### MEDIAS MOVILES
+ma_tg <- forecast::ma(df_tg$TG, 365)
+
+ggplot(df_tg, aes(x = DATE, y = ma_tg)) +
+  geom_line() +
+  ggtitle("Gráfica Medias Movibles y modelo lineal") +
+  xlab("Fecha") +
+  ylab("Medias Movibles (k=365)") +
+  stat_smooth(method = "lm", col = "red", size = 2, alpha = 0.5) +
+  geom_line(aes(y = predict(modelo_lineal)), colour = "blue", size = 1)
+
+# WIP: Agregar leyenda
 ```
+
+Apreciamos que mediante ambos, un modelo lineal y el uso de las medias móviles, la tendencia de la temperatura es positiva con el paso del tiempo.
 
 # Ejercicio 3
 
