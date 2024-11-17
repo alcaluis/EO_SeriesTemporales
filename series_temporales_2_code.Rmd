@@ -14,11 +14,13 @@ rm(list=ls())
 
 # Carga de datos y librerias
 library(lubridate)
+library(dplyr)
 library(tidyr)
 library(lomb)
 library(ggplot2)
 library(forecast)
-tg <- read.table("./data/TG_STAID000455.txt", header = TRUE, sep = ",", skip = 20)
+tg <- read.table("./data/TG_STAID000455.txt",
+                 header = TRUE, sep = ",", skip = 20)
 ```
 
 # Ejercicio 1
@@ -63,7 +65,7 @@ ggplot(df_tg, aes(x = MONTH, y = TG)) +
 
 ¿Parece que hay tendencia? Estimar la tendencia utilizando un modelo lineal y un filtro de media móvil (teniendo cuidado con los valores NA).
 
-```{r ej2}
+```{r ej2, warning=FALSE}
 df_tg$DATE_N <- as.numeric(df_tg$DATE)
 modelo_lineal <- lm(TG ~ DATE_N, data = df_tg) 
 
@@ -150,13 +152,33 @@ ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
 
 ¿Hay evidencia del cambio climático en estas observaciones? Es decir, ¿parece haber un calentamiento a lo largo del tiempo? Responder analizando la información obtenida hasta ahora y, eventualmente, utilizando otros métodos.
 
-```{r ej6}
+## Utilizando información previa
+Gracias a separar de la señal de temperaturas la tendencia es positiva. Implicando un aumento constante de la temperatura año tras año. Por ende, podemos respaldar mediante la gráfica de la tendencia la evidencia del cambio climático.
 
+A su vez, analizando el modelo lineal calculado previamente, podemos ver que este no es constante si no que tiende a crecer. Es decir, aumenta la temperatura con el paso del tiempo. Puedo corroborar otra vez, a favor del cambio climático.
+
+```{r ej6}
+# H0: La temperatura media NO ha aumentado
+# H1: La temperatura media SÍ ha aumentado
+
+# T. Student
+temperaturas_1950 <- df_tg_frec_fija[df_tg_frec_fija$YEAR==1950,]$mean_p_TG
+temperaturas_2023 <- df_tg_frec_fija[df_tg_frec_fija$YEAR==2023,]$mean_p_TG
+media_23_50 <- temperaturas_2023 - temperaturas_1950
+
+t.test(media_23_50, rep(0, length(media_23_50)),
+       alternative = "greater",
+       paired = F,
+       var.equal = F)
+
+# Teniendo un p_value inferior a 0.01, no hay suficiente evidencia estadística
+# para considerar H0. Entonces consideramos H1, es decir, la temperatura media
+# ha aumentado. Otra vez, confirmando el cambio climático.
 ```
 
 # Ejercicio 7
 
-Considerando la información hasta el año 2010, construir un modelo predictivo para la temperatura en la década 2010-2020. Contrastar la predicción obtenida con los datos observados. Comparar distintos modelos predictivos y evaluarlos en cuanto a su capacidad para predecir la temperatura de la d´ecada 2010-2020.
+Considerando la información hasta el año 2010, construir un modelo predictivo para la temperatura en la década 2010-2020. Contrastar la predicción obtenida con los datos observados. Comparar distintos modelos predictivos y evaluarlos en cuanto a su capacidad para predecir la temperatura de la década 2010-2020.
 
 ```{r ej7}
 
