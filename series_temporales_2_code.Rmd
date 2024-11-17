@@ -33,7 +33,8 @@ df_tg <- tg %>%
   mutate(DATE = ymd(DATE),
          TG = TG / 10,
          YEAR = format(DATE, "%Y"),
-         MONTH = format(DATE, "%m")) %>%
+         MONTH = format(DATE, "%m"),
+         DAY_N = as.numeric(format(DATE, "%d"))) %>%
   select(-STAID)
 
 plot(df_tg$DATE, df_tg$TG,
@@ -104,7 +105,12 @@ Antes de continuar con el análisis, transformar la serie temporal en una serie 
 tres periodos de aproximadamente 10 días. Es decir, para cada mes se promedian (con la media) las observaciones en tres periodos: desde el 1 hasta el 10, desde el 11 hasta el 20, y desde el 21 hasta el final del mes (este último periodo puede tener una longitud variable). Las funciones "summarise" en combinación con "group by" del paquete dplyr pueden ser útiles para esta operación.
 
 ```{r ej4}
-
+df_tg_frec_fija <- df_tg %>%
+  mutate(PERIOD = case_when(DAY_N <= 10 ~ "1", 
+                            DAY_N <= 20 ~ "2",
+                            TRUE ~ "3")) %>%
+  group_by(YEAR, MONTH, PERIOD) %>%
+  summarise(mean_p_TG = mean(TG), .groups="keep")
 ```
 
 # Ejercicio 5
