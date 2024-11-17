@@ -10,9 +10,14 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
 
 # Carga de datos y librerias
-# WIP
+library(lubridate)
+library(tidyr)
+library(lomb)
+library(ggplot2)
+tg <- read.table("./data/TG_STAID000455.txt", header = TRUE, sep = ",", skip = 20)
 ```
 
 # Ejercicio 1
@@ -20,7 +25,36 @@ knitr::opts_chunk$set(echo = TRUE)
 Realizar gráficos que describan la serie original. Comprobar mediante algún método gráfico si existe estacionalidad anual.
 
 ```{r ej1}
+### SERIE ORIGINAL
+df_tg <- tg %>%
+  # Retirar valores faltantes
+  filter(Q_TG != 9) %>%
+  mutate(DATE = ymd(DATE),
+         TG = TG / 10,
+         YEAR = format(DATE, "%Y"),
+         MONTH = format(DATE, "%m")) %>%
+  select(-STAID)
 
+plot(df_tg$DATE, df_tg$TG,
+     type = "l",
+     xlab = "Fecha",
+     ylab = "Temp. media (Celsius)",
+     main = "Temperatura estación TENERIFE/LOS RODEOS, SPAIN")
+
+df_tg_13_23 <- df_tg %>%
+  filter(YEAR %in% 2013:2023)
+
+plot(df_tg_13_23$DATE, df_tg_13_23$TG,
+     type = "l",
+     xlab = "Fecha",
+     ylab = "Temp. media (Celsius)",
+     main = "Temperatura estación TENERIFE/LOS RODEOS, SPAIN (2013 a 2023)",
+     col = "lightblue")
+
+### Mostramos estacionalidad anual
+ggplot(df_tg, aes(x = MONTH, y = TG)) +
+  geom_boxplot(fill = "lightblue", color = "black") +
+  labs(title = "Boxplot Mensual de TG", x = "Mes", y = "Temperatura (TG)")
 ```
 
 # Ejercicio 2
