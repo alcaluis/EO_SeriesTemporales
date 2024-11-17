@@ -118,7 +118,32 @@ df_tg_frec_fija <- df_tg %>%
 Descomponer la serie en tendencia, estacionalidad y residuos. Estudiar los residuos y la tendencia.
 
 ```{r ej5}
+tg_ts <- ts(df_tg_frec_fija$mean_p_TG, frequency = 36)
+stl_tg <- stl(tg_ts, "periodic")
 
+
+ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
+  geom_line(aes(y = stl_tg$time.series[, 1]),
+            color ="blue") +
+  labs(title = "Estacionalidad de la serie temporal",
+       x = "Fecha",
+       y = "Estacionalidad")
+
+ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
+  geom_line(aes(y = stl_tg$time.series[, 2]),
+            color ="red") +
+  labs(title = "Tendencia de la serie temporal",
+       x = "Fecha",
+       y = "Tendencia") 
+
+ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
+  geom_line(aes(y = stl_tg$time.series[, 3]),
+            color ="purple") +
+  labs(title = "Residuos de la serie temporal",
+       x = "Fecha",
+       y = "Residuos") 
+
+# WIP: Valores en X como fecha.
 ```
 
 # Ejercicio 6
