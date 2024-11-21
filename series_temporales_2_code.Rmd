@@ -261,5 +261,17 @@ accuracy(ari)
 Proporcionar una estimación de la temperatura hasta el año 2030. En particular, proporcionar una estimación de la temperatura para todos los meses del año 2030. Utilizar el mejor modelo obtenido en el punto anterior. Intentar también proporcionar una estimación de la confianza o incertidumbre de las predicciones.
 
 ```{r ej8}
+total_data <- df_tg_frec_fija[,"mean_p_TG"]
+time_td <- ts(total_data, start=c(1941, 8, 1), frequency=36)
 
+best_ari <- Arima(time_td, order=c(2, 0, 3),
+                  seasonal=list(order=c(2, 1, 0)))
+fore_ej8 <- forecast(best_ari, h = 273) # 2030 incluido
+
+plot(fore_ej8, xlim = c(2020, 2030), ylim=c(7, 30),
+     main = "Predicción hasta 2030")
+
+# Intervalos de confianza calculados por forecast
+head(tail(fore_ej8$lower, 36), 5)
+head(tail(fore_ej8$upper, 36), 5)
 ```
