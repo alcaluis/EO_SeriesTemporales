@@ -65,7 +65,7 @@ ggplot(df_tg, aes(x = MONTH, y = TG)) +
 
 ¿Parece que hay tendencia? Estimar la tendencia utilizando un modelo lineal y un filtro de media móvil (teniendo cuidado con los valores NA).
 
-```{r ej2, warning=FALSE}
+```{r ej2, warning=TRUE}
 df_tg$DATE_N <- as.numeric(df_tg$DATE)
 modelo_lineal <- lm(TG ~ DATE_N, data = df_tg) 
 
@@ -77,10 +77,12 @@ ggplot(df_tg, aes(x = DATE, y = ma_tg)) +
   ggtitle("Gráfica Medias Movibles y modelo lineal") +
   xlab("Fecha") +
   ylab("Medias Movibles (k=365)") +
-  stat_smooth(method = "lm", col = "red", size = 2, alpha = 0.5) +
-  geom_line(aes(y = predict(modelo_lineal)), colour = "blue", size = 1)
-
-# WIP: Agregar leyenda
+  stat_smooth(method = "lm", aes(color = "blue")) +
+  geom_line(aes(y = predict(modelo_lineal), color = "red"), size = 1) +
+  scale_color_identity(name = "Model fit",
+                       breaks = c("red", "blue"),
+                       labels = c("RLS", "MA"),
+                       guide = "legend")
 ```
 
 Apreciamos que mediante ambos, un modelo lineal y el uso de las medias móviles, la tendencia de la temperatura es positiva con el paso del tiempo.
@@ -123,29 +125,43 @@ Descomponer la serie en tendencia, estacionalidad y residuos. Estudiar los resid
 tg_ts <- ts(df_tg_frec_fija$mean_p_TG, frequency = 36)
 stl_tg <- stl(tg_ts, "periodic")
 
+df_tg_frec_fija <- transform(df_tg_frec_fija,
+                             x_axis = paste(YEAR, "/", MONTH, "/P", PERIOD, sep = ""))
+df_tg_frec_fija$x_axis <- factor(df_tg_frec_fija$x_axis,
+                                 levels = unique(df_tg_frec_fija$x_axis))
 
 ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
   geom_line(aes(y = stl_tg$time.series[, 1]),
             color ="blue") +
   labs(title = "Estacionalidad de la serie temporal",
        x = "Fecha",
-       y = "Estacionalidad")
+       y = "Estacionalidad") +
+  scale_x_continuous(breaks = c(1:2960),
+                     labels = df_tg_frec_fija$x_axis,
+                     guide = guide_axis(check.overlap = TRUE)) +
+  theme(axis.text.x = element_text(angle=90))
 
 ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
   geom_line(aes(y = stl_tg$time.series[, 2]),
             color ="red") +
   labs(title = "Tendencia de la serie temporal",
        x = "Fecha",
-       y = "Tendencia") 
+       y = "Tendencia") +
+  scale_x_continuous(breaks = c(1:2960),
+                     labels = df_tg_frec_fija$x_axis,
+                     guide = guide_axis(check.overlap = TRUE)) +
+  theme(axis.text.x = element_text(angle=90))
 
 ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
   geom_line(aes(y = stl_tg$time.series[, 3]),
             color ="purple") +
   labs(title = "Residuos de la serie temporal",
        x = "Fecha",
-       y = "Residuos") 
-
-# WIP: Valores en X como fecha.
+       y = "Residuos") +
+  scale_x_continuous(breaks = c(1:2960),
+                     labels = df_tg_frec_fija$x_axis,
+                     guide = guide_axis(check.overlap = TRUE)) +
+  theme(axis.text.x = element_text(angle=90))
 ```
 
 # Ejercicio 6
