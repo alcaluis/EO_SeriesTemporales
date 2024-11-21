@@ -181,7 +181,63 @@ t.test(media_23_50, rep(0, length(media_23_50)),
 Considerando la información hasta el año 2010, construir un modelo predictivo para la temperatura en la década 2010-2020. Contrastar la predicción obtenida con los datos observados. Comparar distintos modelos predictivos y evaluarlos en cuanto a su capacidad para predecir la temperatura de la década 2010-2020.
 
 ```{r ej7}
+# Filtrar hasta 2010
+df_tg_antes_2010 <- df_tg %>%
+  filter(YEAR < 2010)
 
+# Crear frec_fija
+df_tg_a_2010_ff <- df_tg_antes_2010 %>%
+  mutate(PERIOD = case_when(DAY_N <= 10 ~ "1", 
+                            DAY_N <= 20 ~ "2",
+                            TRUE ~ "3")) %>%
+  group_by(YEAR, MONTH, PERIOD) %>%
+  summarise(mean_p_TG = mean(TG), .groups="keep") %>%
+  mutate(t = as.numeric(YEAR) + (as.numeric(MONTH)-1)/12 + (as.numeric(PERIOD)-1)/36)
+
+# MODELO: RLS
+regre <- lm(mean_p_TG ~ t, data=df_tg_a_2010_ff)
+anyos_predic <- data.frame(list(t=seq(2010, 2020, length.out=360)))
+predict_10_20_regre <-
+  predict(regre,
+          newdata = anyos_predic,
+          interval="prediction")
+
+plot(df_tg_a_2010_ff$t, df_tg_a_2010_ff$mean_p_TG, type="l",
+     xlim=c(1940, 2020), xlab="Fecha", ylab="TG", main="RLS")
+lines(anyos_predic$t, predict_10_20_regre[,2], col="purple")
+lines(anyos_predic$t, predict_10_20_regre[,3], col="purple")
+lines(anyos_predic$t, predict_10_20_regre[,1], col="red")
+
+# TIME SERIES
+ts_df <- df_tg_a_2010_ff[,"mean_p_TG"]
+time_s <- ts(ts_df, start=1941, frequency=36)
+
+# MODEL: HoltWinters
+hw <- HoltWinters(time_s)
+plot(forecast(hw, h=36*10),
+     main="HoltWinters", xlab="Fecha", ylab="TG")
+
+# MODELO: ARIMA
+par(mfrow=c(1, 2))
+ari_0 <- Arima(time_s, order=c(1, 0, 1))
+plot(forecast(ari_0, h=36*10), main="ARIMA BÁSICO", xlab="Fecha", ylab="TG")
+
+ari_1 <- Arima(time_s, order=c(1, 0, 1), seasonal=c(1, 1, 1))
+plot(forecast(ari_1, h=36*10), main="ARIMA BÁSICO + SEASON \nARGUMENTS",
+     xlab="Fecha", ylab="TG")
+par(mfrow=c(1, 1))
+
+# auto.arima --> (2, 0, 3)(2, 1, 0)[36]
+# Gracias a utilizar auto.arima obtenemos los mejores parámetros para
+# utilizar Arima.
+ari <- Arima(time_s, order=c(2, 0, 3),
+             seasonal=list(order=c(2, 1, 0)))
+plot(forecast(ari, h=36*10), xlab="Fecha", ylab="TG", main="ARIMA ÓPTIMO")
+
+# Comparación de resultados
+accuracy(ari_0)
+accuracy(ari_1)
+accuracy(ari)
 ```
 
 # Ejercicio 8
