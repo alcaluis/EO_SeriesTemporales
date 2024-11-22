@@ -27,9 +27,9 @@ tg <- read.table("./data/TG_STAID000455.txt",
 
 # Ejercicio 1
 
-Realizar gráficos que describan la serie original. Comprobar mediante algún método gráfico si existe estacionalidad anual.
+**Realizar gráficos que describan la serie original. Comprobar mediante algún método gráfico si existe estacionalidad anual.**
 
-```{r ej1}
+```{r ej1_1}
 ### SERIE ORIGINAL
 df_tg <- tg %>%
   # Retirar valores faltantes
@@ -56,18 +56,22 @@ plot(df_tg_13_23$DATE, df_tg_13_23$TG,
      ylab = "Temp. media (Celsius)",
      main = "Temperatura estación TENERIFE/LOS RODEOS, SPAIN (2013 a 2023)",
      col = "lightblue")
+```
 
+```{r ej1_2}
 ### Mostramos estacionalidad anual
 ggplot(df_tg, aes(x = MONTH, y = TG)) +
   geom_boxplot(fill = "lightblue", color = "black") +
   labs(title = "Boxplot Mensual de TG", x = "Mes", y = "Temperatura (TG)")
 ```
 
+Al utilizar el diagrama de cajas y bigotes de todos los años podemos ver la estacionalidad de la temperatura. Teniendo temperaturas más altas desde el mes 5 hasta el mes 11.
+
 # Ejercicio 2
 
-¿Parece que hay tendencia? Estimar la tendencia utilizando un modelo lineal y un filtro de media móvil (teniendo cuidado con los valores NA).
+**¿Parece que hay tendencia? Estimar la tendencia utilizando un modelo lineal y un filtro de media móvil (teniendo cuidado con los valores NA).**
 
-```{r ej2, warning=TRUE}
+```{r ej2, warning=FALSE}
 df_tg$DATE_N <- as.numeric(df_tg$DATE)
 modelo_lineal <- lm(TG ~ DATE_N, data = df_tg) 
 
@@ -81,7 +85,7 @@ ggplot(df_tg, aes(x = DATE, y = ma_tg)) +
   ylab("Medias Movibles (k=365)") +
   stat_smooth(method = "lm", aes(color = "blue")) +
   geom_line(aes(y = predict(modelo_lineal), color = "red"), size = 1) +
-  scale_color_identity(name = "Model fit",
+  scale_color_identity(name = "Modelos",
                        breaks = c("red", "blue"),
                        labels = c("RLS", "MA"),
                        guide = "legend")
@@ -91,7 +95,7 @@ Apreciamos que mediante ambos, un modelo lineal y el uso de las medias móviles,
 
 # Ejercicio 3
 
-Analizar la varianza: ¿parece ser constante?
+**Analizar la varianza: ¿parece ser constante?**
 
 ```{r ej3}
 df_tg_est_varianza <- df_tg %>%
@@ -103,12 +107,12 @@ ggplot(df_tg_est_varianza, aes(x = YEAR)) +
   geom_line(aes(y = var_TG), color = "purple", size = 1) +
   labs(title = "Serie Temporal de TG con Varianza", x = "Fecha", y = "Temperatura (TG)")
 ```
+
 Como podemos comprobar la varianza no es constante con el paso de los años. Basándonos en la heterocedasticidad podemos concluir que la serie es "no estacionaria".
 
 # Ejercicio 4
 
-Antes de continuar con el análisis, transformar la serie temporal en una serie regular con una frecuencia fija (el problema es que distintos años tienen diferentes números de días). Para ello, agregamos la serie temporal en 36 puntos por año, promediando los días de cada mes en
-tres periodos de aproximadamente 10 días. Es decir, para cada mes se promedian (con la media) las observaciones en tres periodos: desde el 1 hasta el 10, desde el 11 hasta el 20, y desde el 21 hasta el final del mes (este último periodo puede tener una longitud variable). Las funciones "summarise" en combinación con "group by" del paquete dplyr pueden ser útiles para esta operación.
+**Antes de continuar con el análisis, transformar la serie temporal en una serie regular con una frecuencia fija (el problema es que distintos años tienen diferentes números de días). Para ello, agregamos la serie temporal en 36 puntos por año, promediando los días de cada mes en tres periodos de aproximadamente 10 días. Es decir, para cada mes se promedian (con la media) las observaciones en tres periodos: desde el 1 hasta el 10, desde el 11 hasta el 20, y desde el 21 hasta el final del mes (este último periodo puede tener una longitud variable). Las funciones "summarise" en combinación con "group by" del paquete dplyr pueden ser útiles para esta operación.**
 
 ```{r ej4}
 df_tg_frec_fija <- df_tg %>%
@@ -117,11 +121,14 @@ df_tg_frec_fija <- df_tg %>%
                             TRUE ~ "3")) %>%
   group_by(YEAR, MONTH, PERIOD) %>%
   summarise(mean_p_TG = mean(TG), .groups="keep")
+
+print("Dataframe ajustado por periodos")
+head(df_tg_frec_fija)
 ```
 
 # Ejercicio 5
 
-Descomponer la serie en tendencia, estacionalidad y residuos. Estudiar los residuos y la tendencia.
+**Descomponer la serie en tendencia, estacionalidad y residuos. Estudiar los residuos y la tendencia.**
 
 ```{r ej5}
 tg_ts <- ts(df_tg_frec_fija$mean_p_TG, frequency = 36)
@@ -131,7 +138,9 @@ df_tg_frec_fija <- transform(df_tg_frec_fija,
                              x_axis = paste(YEAR, "/", MONTH, "/P", PERIOD, sep = ""))
 df_tg_frec_fija$x_axis <- factor(df_tg_frec_fija$x_axis,
                                  levels = unique(df_tg_frec_fija$x_axis))
+```
 
+```{r ej5_estacionalidad}
 ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
   geom_line(aes(y = stl_tg$time.series[, 1]),
             color ="blue") +
@@ -142,7 +151,11 @@ ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
                      labels = df_tg_frec_fija$x_axis,
                      guide = guide_axis(check.overlap = TRUE)) +
   theme(axis.text.x = element_text(angle=90))
+```
 
+Como esperábamos, observamos una estacionalidad quasi periódica. Pareciendo un seno perfecto.
+
+```{r ej5_tendencia}
 ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
   geom_line(aes(y = stl_tg$time.series[, 2]),
             color ="red") +
@@ -153,7 +166,13 @@ ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
                      labels = df_tg_frec_fija$x_axis,
                      guide = guide_axis(check.overlap = TRUE)) +
   theme(axis.text.x = element_text(angle=90))
+```
 
+La tendencia. como analizamos anteriormente con las MA, es creciente teniendo un pico de disminución alrededor del año 2005-2006.
+
+Después de buscar información en la AEMET, podemos confirmar que dichas temperaturas serán outliers o fenómenos casuales de la estación de Tenerife.
+
+```{r ej5_residuos}
 ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
   geom_line(aes(y = stl_tg$time.series[, 3]),
             color ="purple") +
@@ -164,16 +183,29 @@ ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
                      labels = df_tg_frec_fija$x_axis,
                      guide = guide_axis(check.overlap = TRUE)) +
   theme(axis.text.x = element_text(angle=90))
+
+acf(stl_tg$time.series[, 3], main="ACF Ruido de la señal")
+pacf(stl_tg$time.series[, 3], main="PACF Ruido de la señal")
 ```
+
+Gracias al ACF y PCAF, podemos observar que el ruido no sigue un esquema característico o patrón. Pudiendolo catalogar entonces como "Ruido Blanco".
 
 # Ejercicio 6
 
-¿Hay evidencia del cambio climático en estas observaciones? Es decir, ¿parece haber un calentamiento a lo largo del tiempo? Responder analizando la información obtenida hasta ahora y, eventualmente, utilizando otros métodos.
+**¿Hay evidencia del cambio climático en estas observaciones? Es decir, ¿parece haber un calentamiento a lo largo del tiempo? Responder analizando la información obtenida hasta ahora y, eventualmente, utilizando otros métodos.**
 
 ## Utilizando información previa
+
 Gracias a separar de la señal de temperaturas la tendencia es positiva. Implicando un aumento constante de la temperatura año tras año. Por ende, podemos respaldar mediante la gráfica de la tendencia la evidencia del cambio climático.
 
 A su vez, analizando el modelo lineal calculado previamente, podemos ver que este no es constante si no que tiende a crecer. Es decir, aumenta la temperatura con el paso del tiempo. Puedo corroborar otra vez, a favor del cambio climático.
+
+## Realizando una prueba de T. Student
+
+Para evidenciar el cambio climático vamos a realizar una prueba simple de T.Student. En esta compararemos las temperaturas medias de dos años (1950 y 2023). Donde nuestra hipotesis representarán:
+
+* $H_0$: La temperatura media NO ha aumentado.
+* $H_1$: La temperatura media SÍ ha aumentado.
 
 ```{r ej6}
 # H0: La temperatura media NO ha aumentado
@@ -188,15 +220,13 @@ t.test(media_23_50, rep(0, length(media_23_50)),
        alternative = "greater",
        paired = F,
        var.equal = F)
-
-# Teniendo un p_value inferior a 0.01, no hay suficiente evidencia estadística
-# para considerar H0. Entonces consideramos H1, es decir, la temperatura media
-# ha aumentado. Otra vez, confirmando el cambio climático.
 ```
+
+Teniendo un p_value inferior a 0.01, no hay suficiente evidencia estadística para considerar $H_0$. Entonces consideramos $H_1$, es decir, la temperatura media ha aumentado. Otra vez, confirmando el cambio climático.
 
 # Ejercicio 7
 
-Considerando la información hasta el año 2010, construir un modelo predictivo para la temperatura en la década 2010-2020. Contrastar la predicción obtenida con los datos observados. Comparar distintos modelos predictivos y evaluarlos en cuanto a su capacidad para predecir la temperatura de la década 2010-2020.
+**Considerando la información hasta el año 2010, construir un modelo predictivo para la temperatura en la década 2010-2020. Contrastar la predicción obtenida con los datos observados. Comparar distintos modelos predictivos y evaluarlos en cuanto a su capacidad para predecir la temperatura de la década 2010-2020.**
 
 ```{r ej7}
 # Filtrar hasta 2010
@@ -250,17 +280,32 @@ par(mfrow=c(1, 1))
 # utilizar Arima.
 ari <- Arima(time_s, order=c(2, 0, 3),
              seasonal=list(order=c(2, 1, 0)))
-plot(forecast(ari, h=36*10), xlab="Fecha", ylab="TG", main="ARIMA ÓPTIMO")
+fore_ari <- forecast(ari, h=36*10)
+plot(fore_ari, xlab="Fecha", ylab="TG", main="ARIMA ÓPTIMO")
+```
 
-# Comparación de resultados
+
+```{r ej7_comp}
+# Comparación de modelos
 accuracy(ari_0)
 accuracy(ari_1)
 accuracy(ari)
 ```
 
+Como vemos el modelo ARIMA que nos ha calculado la función auto.arima, es muy preciso.
+
+```{r ej7_comp_datos_reales}
+df_tg_2010_2020 <- df_tg %>%
+  filter((YEAR > 2009) & (YEAR < 2021))
+
+# WIP
+plot(fore_ari, xlab="Fecha", ylab="TG", main="ARIMA ÓPTIMO")
+# lines(df_tg_2010_2020$t, df_tg_2010_2020$mean_p_TG, col="red")
+```
+
 # Ejercicio 8
 
-Proporcionar una estimación de la temperatura hasta el año 2030. En particular, proporcionar una estimación de la temperatura para todos los meses del año 2030. Utilizar el mejor modelo obtenido en el punto anterior. Intentar también proporcionar una estimación de la confianza o incertidumbre de las predicciones.
+**Proporcionar una estimación de la temperatura hasta el año 2030. En particular, proporcionar una estimación de la temperatura para todos los meses del año 2030. Utilizar el mejor modelo obtenido en el punto anterior. Intentar también proporcionar una estimación de la confianza o incertidumbre de las predicciones.**
 
 ```{r ej8}
 total_data <- df_tg_frec_fija[,"mean_p_TG"]
