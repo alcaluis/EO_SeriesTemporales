@@ -304,6 +304,9 @@ time_s_2 <- ts(ts_df_2, start=c(1941,8), frequency=36)
 
 plot(fore_ari, xlab="Fecha", ylab="TG", main="ARIMA ÓPTIMO", ylim=c(5, 30), xlim = c(2005, 2020))
 lines(window(time_s_2, start=2008.75, end=2020), col="red")
+
+legend("topleft", legend = c("Observaciones", "Predicciones"),
+       col = c("red","blue"), lwd = 2, bty = "n")
 ```
 
 # Ejercicio 8
