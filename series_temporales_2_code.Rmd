@@ -258,7 +258,7 @@ lines(anyos_predic$t, predict_10_20_regre[,1], col="red")
 
 # TIME SERIES
 ts_df <- df_tg_a_2010_ff[,"mean_p_TG"]
-time_s <- ts(ts_df, start=1941, frequency=36)
+time_s <- ts(ts_df, start=c(1941,8), frequency=36)
 
 # MODEL: HoltWinters
 hw <- HoltWinters(time_s)
@@ -280,7 +280,7 @@ par(mfrow=c(1, 1))
 # utilizar Arima.
 ari <- Arima(time_s, order=c(2, 0, 3),
              seasonal=list(order=c(2, 1, 0)))
-fore_ari <- forecast(ari, h=36*10)
+fore_ari <- forecast(ari, h=36*11)
 plot(fore_ari, xlab="Fecha", ylab="TG", main="ARIMA ÓPTIMO")
 ```
 
@@ -298,9 +298,12 @@ Como vemos el modelo ARIMA que nos ha calculado la función auto.arima, es muy p
 df_tg_2010_2020 <- df_tg %>%
   filter((YEAR > 2009) & (YEAR < 2021))
 
-# WIP
-plot(fore_ari, xlab="Fecha", ylab="TG", main="ARIMA ÓPTIMO")
-# lines(df_tg_2010_2020$t, df_tg_2010_2020$mean_p_TG, col="red")
+
+ts_df_2 <- df_tg_frec_fija[,"mean_p_TG"]
+time_s_2 <- ts(ts_df_2, start=c(1941,8), frequency=36)
+
+plot(fore_ari, xlab="Fecha", ylab="TG", main="ARIMA ÓPTIMO", ylim=c(5, 30), xlim = c(2005, 2020))
+lines(window(time_s_2, start=2008.75, end=2020), col="red")
 ```
 
 # Ejercicio 8
