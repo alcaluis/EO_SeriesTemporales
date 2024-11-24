@@ -11,7 +11,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, out.width="80%")
 rm(list=ls())
 
 # Carga de datos y librerias
@@ -45,7 +45,7 @@ plot(df_tg$DATE, df_tg$TG,
      type = "l",
      xlab = "Fecha",
      ylab = "Temp. media (Celsius)",
-     main = "Temperatura estación TENERIFE/LOS RODEOS, SPAIN")
+     main = "Temperatura TENERIFE/LOS RODEOS, SPAIN")
 
 df_tg_13_23 <- df_tg %>%
   filter(YEAR %in% 2013:2023)
@@ -54,7 +54,7 @@ plot(df_tg_13_23$DATE, df_tg_13_23$TG,
      type = "l",
      xlab = "Fecha",
      ylab = "Temp. media (Celsius)",
-     main = "Temperatura estación TENERIFE/LOS RODEOS, SPAIN (2013 a 2023)",
+     main = "Temperatura TENERIFE/LOS RODEOS, SPAIN (2013 a 2023)",
      col = "lightblue")
 ```
 
@@ -91,7 +91,7 @@ ggplot(df_tg, aes(x = DATE, y = ma_tg)) +
                        guide = "legend")
 ```
 
-Apreciamos que mediante ambos, un modelo lineal y el uso de las medias móviles, la tendencia de la temperatura es positiva con el paso del tiempo.
+Apreciamos que mediante ambos, un modelo lineal y el uso de las medias móviles, la tendencia de la temperatura es positiva y creciente con el paso del tiempo.
 
 # Ejercicio 3
 
@@ -142,7 +142,7 @@ df_tg_frec_fija$x_axis <- factor(df_tg_frec_fija$x_axis,
 
 ```{r ej5_estacionalidad}
 ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
-  geom_line(aes(y = stl_tg$time.series[, 1]),
+  geom_line(aes(y = as.numeric(stl_tg$time.series[, 1])),
             color ="blue") +
   labs(title = "Estacionalidad de la serie temporal",
        x = "Fecha",
@@ -157,7 +157,7 @@ Como esperábamos, observamos una estacionalidad quasi periódica. Pareciendo un
 
 ```{r ej5_tendencia}
 ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
-  geom_line(aes(y = stl_tg$time.series[, 2]),
+  geom_line(aes(y = as.numeric(stl_tg$time.series[, 2])),
             color ="red") +
   labs(title = "Tendencia de la serie temporal",
        x = "Fecha",
@@ -174,7 +174,7 @@ Después de buscar información en la AEMET, podemos confirmar que dichas temper
 
 ```{r ej5_residuos}
 ggplot(df_tg_frec_fija, aes(x = c(1:2960))) +
-  geom_line(aes(y = stl_tg$time.series[, 3]),
+  geom_line(aes(y = as.numeric(stl_tg$time.series[, 3])),
             color ="purple") +
   labs(title = "Residuos de la serie temporal",
        x = "Fecha",
